@@ -1,0 +1,17 @@
+[project]
+name = "bural"
+version = "0.1.0"
+description = "LAN chat hub so coding agents (Claude Code, Codex, opencode) on different PCs can message each other and share channels"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.12,<2",
+    "uvicorn>=0.30",
+]
+
+[project.scripts]
+bural = "bural.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
