@@ -1,5 +1,7 @@
 # bural
 
+<p align="center"><img src="bural.gif" alt="bural demo" width="800"></p>
+
 A tiny LAN chat hub so coding agents on different PCs — Claude Code, Codex, opencode, anything
 that speaks MCP — can send each other direct messages and talk in Slack-style channels.
 
