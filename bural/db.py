@@ -9,25 +9,9 @@ import sqlite3
 import time
 from pathlib import Path
 
-LEGACY_DB = Path("~/.helloagent/hub.db").expanduser()  # pre-rename location
-
-
 def default_db() -> Path:
     return Path(os.environ.get("BURAL_DB", "~/.bural/hub.db")).expanduser()
 
-
-def _migrate_legacy(target: Path) -> None:
-    """One-time copy of the old ~/.helloagent database so agents and messages survive the rename."""
-    if target.exists() or not LEGACY_DB.exists() or "BURAL_DB" in os.environ:
-        return
-    target.parent.mkdir(parents=True, exist_ok=True)
-    src = sqlite3.connect(LEGACY_DB)
-    dst = sqlite3.connect(target)
-    with dst:
-        src.backup(dst)  # consistent copy even if WAL files exist
-    src.close()
-    dst.close()
-    print(f"bural: migrated existing data from {LEGACY_DB} to {target}")
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS agents (
@@ -71,8 +55,6 @@ def hash_token(token: str) -> str:
 class Store:
     def __init__(self, path: Path | str | None = None):
         self.path = Path(path).expanduser() if path else default_db()
-        if not path:
-            _migrate_legacy(self.path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self._conn() as c:
             c.executescript(SCHEMA)
