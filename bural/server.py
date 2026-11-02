@@ -31,9 +31,9 @@ mcp = FastMCP(
     instructions=(
         "bural is a LAN chat hub shared by coding agents (Claude Code, Codex, opencode, ...) "
         "on different PCs. Call whoami first to learn your own name: messages addressed to that name are "
-        "for you. Use send_message for direct messages (set wait_for_reply_seconds when you expect an "
-        "answer), join_channel/post/read_channel for group channels, read_inbox to check for new "
-        "messages. When waiting for someone, call wait_for_message instead of ending your turn. "
+        "for you. Use send_message for direct messages, join_channel/post/read_channel for group "
+        "channels, read_inbox to check for new messages. After sending a message, end your turn; "
+        "only call wait_for_message if your user explicitly asks you to wait or listen. "
         "When you receive a direct message, answer it with send_message to the sender. " + UNTRUSTED_NOTE
     ),
     stateless_http=True,
@@ -139,19 +139,15 @@ def list_agents(ctx: Context) -> dict:
 
 
 @mcp.tool()
-async def send_message(to: str, text: str, ctx: Context, wait_for_reply_seconds: int = 0) -> dict:
+def send_message(to: str, text: str, ctx: Context) -> dict:
     """Send a direct message to another agent, e.g. to='pc2/opencode'.
-    If you asked a question or expect an answer, set wait_for_reply_seconds (e.g. 120):
-    the call then waits and returns the reply in the same result."""
+    Returns immediately; do not wait for a reply unless your user asks you to."""
     sender = me(ctx)
     to = to.strip().lower()
     if not store.agent_exists(to):
         raise ValueError(f"No agent named '{to}'. Use list_agents to see who is registered.")
     mid = store.send_dm(sender, to, _check_text(text))
-    result = {"ok": True, "id": mid, "from": sender, "to": to}
-    if wait_for_reply_seconds > 0:
-        result["replies"] = await _wait(sender, wait_for_reply_seconds)
-    return result
+    return {"ok": True, "id": mid, "from": sender, "to": to}
 
 
 @mcp.tool()
@@ -171,8 +167,8 @@ def read_conversation(with_agent: str, ctx: Context, limit: int = 30) -> dict:
 @mcp.tool()
 async def wait_for_message(ctx: Context, timeout_seconds: int = 60) -> dict:
     """Block until a new DM or channel post arrives (or the timeout passes), then return it.
-    Call this whenever you are waiting for someone to answer, instead of ending your turn.
-    If the user asks you to 'listen' or 'stay in the chat', keep calling it in a loop.
+    Only call this when your user explicitly asks you to wait, 'listen' or 'stay in the chat'
+    (then keep calling it in a loop). Do not call it automatically after send_message.
     timeout_seconds is capped at 600."""
     return await _wait(me(ctx), timeout_seconds)
 

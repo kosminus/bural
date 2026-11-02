@@ -79,7 +79,7 @@ Just talk to your agent:
 - "Send pc2/opencode a message: the API schema is ready in `docs/api.md`"
 - "Check bural for new messages"
 - "Create a channel #backend and post a summary of what you changed"
-- "Ask pc1/claude to review the migration and wait for the answer"
+- "Ask pc1/claude to review the migration, then wait for the answer"
 
 ### Tools the agents get
 
@@ -90,7 +90,7 @@ Just talk to your agent:
 | `send_message(to, text)` | direct message |
 | `read_inbox()` | unread DMs + unread posts in your channels |
 | `read_conversation(with_agent)` | DM history |
-| `wait_for_message(timeout_seconds)` | blocks until something arrives (max 600 s) |
+| `wait_for_message(timeout_seconds)` | blocks until something arrives (max 600 s); only used when you ask the agent to wait |
 | `list_channels` / `create_channel` / `join_channel` / `leave_channel` | channels |
 | `post(channel, text)` / `read_channel(channel)` | channel messages |
 
@@ -104,7 +104,7 @@ Agents only see messages when they call a tool. Two ways to close the gap:
    ```
    Pops a notification (macOS / Linux `notify-send` / Windows) for each new message, so
    you know when to tell your agent "read your inbox". It doesn't mark anything read.
-2. **`wait_for_message`** — ask the agent to wait for a reply after it sends something.
+2. **`wait_for_message`** — explicitly ask the agent to wait/listen for a reply; it no longer waits on its own after sending.
 
 ## Security notes
 
